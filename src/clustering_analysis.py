@@ -1,3 +1,4 @@
+from inspect import signature
 import sys
 import pysm3
 import pysm3.units as units
@@ -52,7 +53,7 @@ litebird_noise = [
     13.80,
     21.95,
     47.45
-] # Q: What is this? Value and unit?
+]  # Q: What is this? Value and unit?
 
 fwhm = 60 * units.arcmin
 
@@ -61,4 +62,58 @@ fwhm = 60 * units.arcmin
 frequency_maps = {}
 for freq in litebird_freq:
     frequency_maps[freq] = sky.get_emission(freq * units.GHz)
+
+# Q: why are there 3 columns for each frequency? What do they represent
+
+# Add noise, smooth and generate cov maps
+
+seed = 1111
+_, noises1 = cov_noise_map(
+    sigma_I=np.array(litebird_noise),
+    sigma_P=np.array(litebird_noise),
+    nu=np.array(litebird_freq),
+    nside=nside,
+    fwhm=fwhm/60.0,
+    out_prefix='full_mission_litebird',
+    out_dir='../outputs',
+    seed=seed
+)
+
+frequency_noise = {}
+for i, freq in enumerate(litebird_freq):
+    frequency_noise[freq] = noises1[i]
+
+frequency_full_sky_maps = {}
+for freq in litebird_freq:
+    frequency_full_sky_maps[freq] = frequency_maps[freq] + \
+        frequency_noise[freq] * units.uK_CMB
+
+
+seed = 2222
+_, noises2 = cov_noise_map(
+    sigma_I=np.array(litebird_noise),
+    sigma_P=np.array(litebird_noise),
+    nu=np.array(litebird_freq),
+    nside=nside,
+    fwhm=fwhm/60.0,
+    out_prefix='half1_mission_litebird',
+    out_dir='../outputs',
+    seed=seed
+)
+
+seed = 3333
+_, noises3 = cov_noise_map(
+    sigma_I=np.array(litebird_noise),
+    sigma_P=np.array(litebird_noise),
+    nu=np.array(litebird_freq),
+    nside=nside,
+    fwhm=fwhm/60.0,
+    out_prefix='half2_mission_litebird',
+    out_dir='../outputs',
+    seed=seed
+)
+
+## All three same the same to me? sqrt(2) is missing in the last two if that is what is needed
+
+
 
