@@ -12,7 +12,7 @@ nside = 512
 nside_dg = 128
 sky = pysm3.Sky(
     nside=nside,
-    present_strings=["d1", "s1", "c1"],
+    preset_strings=["d1", "s1", "c1"],
     output_unit='uK_CMB'
 )
 
@@ -34,6 +34,31 @@ litebird_freq = [
     280,
     337,
     402
-] * units.GHz
+]
+
+litebird_noise = [
+    37.42,
+    33.46,
+    21.31,
+    16.87,
+    12.07,
+    11.30,
+    6.56,
+    4.58,
+    4.79,
+    5.57,
+    5.85,
+    10.79,
+    13.80,
+    21.95,
+    47.45
+] # Q: What is this? Value and unit?
 
 fwhm = 60 * units.arcmin
+
+# Get sky emission at each frequency
+
+frequency_maps = {}
+for freq in litebird_freq:
+    frequency_maps[freq] = sky.get_emission(freq * units.GHz)
+
