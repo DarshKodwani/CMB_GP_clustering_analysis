@@ -2,3 +2,5 @@ numpy
 matplotlib
 pysm3
 healpy
+scikit-learn
+astropy
