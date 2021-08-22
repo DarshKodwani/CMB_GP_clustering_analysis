@@ -1,5 +1,6 @@
 from inspect import signature
 import sys
+from typing import overload
 import pysm3
 import pysm3.units as units
 import numpy as np
@@ -79,14 +80,14 @@ _, noises1 = cov_noise_map(
     seed=seed
 )
 
-frequency_noise = {}
+frequency_noise1 = {}
 for i, freq in enumerate(litebird_freq):
-    frequency_noise[freq] = noises1[i]
+    frequency_noise1[freq] = noises1[i]
 
 frequency_full_sky_maps = {}
 for freq in litebird_freq:
     frequency_full_sky_maps[freq] = frequency_maps[freq] + \
-        frequency_noise[freq] * units.uK_CMB
+        frequency_noise1[freq] * units.uK_CMB
 
 
 seed = 2222
@@ -101,6 +102,15 @@ _, noises2 = cov_noise_map(
     seed=seed
 )
 
+frequency_noise2 = {}
+for i, freq in enumerate(litebird_freq):
+    frequency_noise2[freq] = noises2[i]
+
+frequency_half1_sky_maps = {}
+for freq in litebird_freq:
+    frequency_half1_sky_maps[freq] = frequency_maps[freq] + \
+        frequency_noise2[freq] * units.uK_CMB
+
 seed = 3333
 _, noises3 = cov_noise_map(
     sigma_I=np.array(litebird_noise),
@@ -113,7 +123,48 @@ _, noises3 = cov_noise_map(
     seed=seed
 )
 
-## All three same the same to me? sqrt(2) is missing in the last two if that is what is needed
+frequency_noise3 = {}
+for i, freq in enumerate(litebird_freq):
+    frequency_noise3[freq] = noises3[i]
+
+frequency_half2_sky_maps = {}
+for freq in litebird_freq:
+    frequency_half2_sky_maps[freq] = frequency_maps[freq] + \
+        frequency_noise3[freq] * units.uK_CMB
 
 
+# Q: All three same the same to me? sqrt(2) is missing in the last two if that is what is needed
+
+# Smooth maps with noise added
+
+for i, freq in enumerate(litebird_freq):
+    frequency_full_sky_maps[freq] = pysm3.apply_smoothing_and_coord_transform(
+        frequency_full_sky_maps[freq], fwhm)
+    frequency_half1_sky_maps[freq] = pysm3.apply_smoothing_and_coord_transform(
+        frequency_half1_sky_maps[freq], fwhm)
+    frequency_half2_sky_maps[freq] = pysm3.apply_smoothing_and_coord_transform(
+        frequency_half2_sky_maps[freq], fwhm)
+
+out_dir = 'ouputs'
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+
+for freq in litebird_freq:
+    hp.write_map(
+        f"{out_dir}/full_mission_litebird_nu{freq}GHz_{fwhm.value}arcmin_nside{nside}",
+        frequency_full_sky_maps[freq],
+        overwrite=True
+    )
+
+    hp.write_map(
+        f"{out_dir}/half1_mission_litebird_nu{freq}GHz_{fwhm.value}arcmin_nside{nside}",
+        frequency_half1_sky_maps[freq],
+        overwrite=True
+    )
+
+    hp.write_map(
+        f"{out_dir}/half2_mission_litebird_nu{freq}GHz_{fwhm.value}arcmin_nside{nside}",
+        frequency_half2_sky_maps[freq],
+        overwrite=True
+    )
 
