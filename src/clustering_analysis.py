@@ -168,3 +168,20 @@ for freq in litebird_freq:
         overwrite=True
     )
 
+    hp.write_map(
+        f"{out_dir}/full_mission_litebird_nu{freq}GHz_{fwhm.value}arcmin_nside{nside_dg}",
+        frequency_full_sky_maps[freq],
+        overwrite=True
+    )
+
+    hp.write_map(
+        f"{out_dir}/half1_mission_litebird_nu{freq}GHz_{fwhm.value}arcmin_nside{nside_dg}",
+        frequency_half1_sky_maps[freq],
+        overwrite=True
+    )
+
+    hp.write_map(
+        f"{out_dir}/half2_mission_litebird_nu{freq}GHz_{fwhm.value}arcmin_nside{nside_dg}",
+        frequency_half2_sky_maps[freq],
+        overwrite=True
+    )
