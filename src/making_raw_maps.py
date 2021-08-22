@@ -8,6 +8,7 @@ import healpy as hp
 from mk_noise_map import cov_noise_map
 import matplotlib.pyplot as plt
 from pathlib import Path
+from clustering import compute_P_maps
 
 # PySM sky model
 nside = 512
@@ -185,3 +186,4 @@ for freq in litebird_freq:
         frequency_half2_sky_maps[freq],
         overwrite=True
     )
+
