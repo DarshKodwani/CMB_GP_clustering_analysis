@@ -146,7 +146,7 @@ for i, freq in enumerate(litebird_freq):
     frequency_half2_sky_maps[freq] = pysm3.apply_smoothing_and_coord_transform(
         frequency_half2_sky_maps[freq], fwhm)
 
-out_dir = 'ouputs'
+out_dir = 'outputs'
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 
 
