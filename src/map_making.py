@@ -9,6 +9,19 @@ import healpy as hp
 from mk_noise_map import cov_noise_map
 
 
+def dg_map(in_map, nside_in, nside_out):
+
+    alm = hp.map2alm(in_map)
+    pw = hp.pixwin(nside=nside_in, pol=True)
+    ipw = 1 / pw[0]
+    ppw = 1 / pw[1]
+    ppw[0:2] = 0
+    alm[0] = hp.almxfl(alm[0], ipw)
+    alm[1] = hp.almxfl(alm[1], ppw)
+    alm[2] = hp.almxfl(alm[2], ppw)
+
+    return hp.alm2map(alm, nside=nside_out, pol=True, pixwin=True)
+
 def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_map=True, save_map=True):
     # Check if directory exists
     if save_map:
@@ -18,10 +31,10 @@ def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
-    # Initialise sky
+    # Initialise sky - abstractify this into a different function
     sky = pysm3.Sky(
         nside=nside,
-        preset_strings=["d1", "s1", "c1"],
+        preset_strings=["d1", "s1", "c1"], # These are noise and cmb models. These should be inputs
         output_unit='uK_CMB'
     )
     # Make signal and noise maps
@@ -35,7 +48,7 @@ def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_
         out_prefix='full_mission_litebird',
         out_dir=output_directory,
         seed=noise_seed
-    )
+    ) # Instrumental noise - from litebird (please cite)
     full_map = signal_map + noise_map[0] * units.uK_CMB
 
     # Smooth map
@@ -43,6 +56,8 @@ def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_
         print(f"-----Smoothing map with fwhm = {fwhm}-----")
         full_map = pysm3.apply_smoothing_and_coord_transform(
             full_map, fwhm)
+
+    # Downgrade the maps - should be optional
 
     # Save or return map
     if save_map:
