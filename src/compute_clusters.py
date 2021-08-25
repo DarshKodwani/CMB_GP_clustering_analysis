@@ -20,7 +20,6 @@ def get_noiseless_clusters(test_file1, test_file2):
         smooth_fwhm=None,
         uK_cmb=False
     )
-
     pmaps = np.concatenate(
         [pmap1[:, np.newaxis], pmap2[:, np.newaxis]], axis=1)
     len_max = 10000
@@ -36,3 +35,7 @@ def get_noiseless_clusters(test_file1, test_file2):
 
     noiseless_clusters = np.argmax(soft_clusters, axis=1)
     return noiseless_clusters
+
+
+if __name__ == "__main__":
+    get_noiseless_clusters(test_file1=test_file1, test_file2=test_file2)
