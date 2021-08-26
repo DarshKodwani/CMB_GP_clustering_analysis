@@ -4,9 +4,7 @@ Original author: Luke Jew
 Adapted by Richard Grumitt (25/05/2021)
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import healpy as hp
-from sklearn.cluster import MeanShift, estimate_bandwidth
 from astropy.constants import si
 from astropy.cosmology import default_cosmology
 
