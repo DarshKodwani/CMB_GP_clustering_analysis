@@ -23,9 +23,17 @@ def dg_map(in_map, nside_in, nside_out):
     return hp.alm2map(alm, nside=nside_out, pol=True, pixwin=True)
 
 
-def make_sky_map(freq, fwhm, nside, nside_downgraded,
-                 instrument_noise_freq, noise_seed, output_directory,
-                 preset_strings, output_unit, output_prefix,
+def initialise_sky(nside, preset_strings, output_unit):
+    return pysm3.Sky(
+        nside=nside,
+        preset_strings=preset_strings,
+        output_unit=output_unit
+    )
+
+
+def make_sky_map(sky, freq, fwhm, nside, nside_downgraded,
+                 instrument_noise_freq, noise_seed,
+                 output_directory, output_prefix,
                  smooth_map=True, save_map=True, downgrade_map=True):
     # Check if directory exists
     if save_map:
@@ -35,13 +43,6 @@ def make_sky_map(freq, fwhm, nside, nside_downgraded,
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
-    # Initialise sky - abstractify this into a different function
-    sky = pysm3.Sky(
-        nside=nside,
-        # These are noise and cmb models. These should be inputs
-        preset_strings=preset_strings,
-        output_unit=output_unit
-    )
     # Make signal and noise maps
     signal_map = sky.get_emission(freq * units.GHz)
     _, noise_map = cov_noise_map(
@@ -82,7 +83,8 @@ def make_sky_map(freq, fwhm, nside, nside_downgraded,
 
 
 if __name__ == "__main__":
-    make_sky_map(40, 60*units.arcmin, 128, 64,
+    sky = initialise_sky(128, ["d1", "s1", "c1"], "uK_CMB")
+    make_sky_map(sky, 40, 60*units.arcmin, 128, 64,
                  37.42, 1111, "outputs",
-                 ["d1", "s1", "c1"], "uK_CMB", "litebird",
+                 "litebird",
                  True, True, True)
