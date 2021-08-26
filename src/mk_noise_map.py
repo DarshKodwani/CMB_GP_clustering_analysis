@@ -84,7 +84,7 @@ def cov_noise_map(sigma_I, sigma_P, nu, nside, fwhm, out_dir, out_prefix, seed=1
         diag_cov = np.array([cov_II, cov_QQ, cov_UU])
         cov.append(diag_cov)
 
-        freq_str = '{0:07.2f}'.format(nu[i]).replace('.', 'p')
+        freq_str = nu[i]
         print('Saving {0}/{1}_nu{2}GHz_cov_nside{3:04d}.fits'.format(out_dir, out_prefix, freq_str, nside))
         hp.write_map('{0}/{1}_nu{2}GHz_cov_nside{3:04d}.fits'.format(out_dir, out_prefix, freq_str, nside), diag_cov, overwrite=True)
         
