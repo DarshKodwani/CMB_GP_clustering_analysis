@@ -22,7 +22,8 @@ def dg_map(in_map, nside_in, nside_out):
 
     return hp.alm2map(alm, nside=nside_out, pol=True, pixwin=True)
 
-def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_map=True, save_map=True):
+
+def make_sky_map(freq, fwhm, nside, nside_downgraded, noise, noise_seed, output_directory, smooth_map=True, save_map=True, downgrade_map=True):
     # Check if directory exists
     if save_map:
         if output_directory == None:
@@ -34,7 +35,8 @@ def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_
     # Initialise sky - abstractify this into a different function
     sky = pysm3.Sky(
         nside=nside,
-        preset_strings=["d1", "s1", "c1"], # These are noise and cmb models. These should be inputs
+        # These are noise and cmb models. These should be inputs
+        preset_strings=["d1", "s1", "c1"],
         output_unit='uK_CMB'
     )
     # Make signal and noise maps
@@ -48,7 +50,7 @@ def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_
         out_prefix='full_mission_litebird',
         out_dir=output_directory,
         seed=noise_seed
-    ) # Instrumental noise - from litebird (please cite)
+    )  # Instrumental noise - from litebird (please cite)
     full_map = signal_map + noise_map[0] * units.uK_CMB
 
     # Smooth map
@@ -59,6 +61,9 @@ def make_sky_map(freq, fwhm, nside, noise, noise_seed, output_directory, smooth_
 
     # Downgrade the maps - should be optional
 
+    if downgrade_map:
+       full_map = dg_map(full_map, nside_in=nside,
+                                nside_out=nside_downgraded)
     # Save or return map
     if save_map:
         filename = f"freq{int(freq)}Ghz_fwhm{int(fwhm.value)}_noise{int(noise)}_map"
