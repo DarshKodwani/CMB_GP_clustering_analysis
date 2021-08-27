@@ -1,41 +1,65 @@
-from clustering import compute_P_maps
+from src.clustering import compute_P_maps
 import numpy as np
 import hdbscan
+import healpy as hp
+import matplotlib.pyplot as plt
 
-test_file1 = "outputs/full_mission_litebird_nu40GHz_60.0arcmin_nside128"
-test_file2 = "outputs/full_mission_litebird_nu60GHz_60.0arcmin_nside128"
+def get_noiseless_clusters(filenames, frequencies, smoothing_fwhm=None, uK_cmb=None):
 
-
-def get_noiseless_clusters(test_file1, test_file2):
-    pmap1 = compute_P_maps(
-        test_file1,
-        freq=40,
-        smooth_fwhm=None,
-        uK_cmb=False
+    pmaps = compute_P_maps(
+        filenames[0],
+        freq=frequencies[0],
+        smooth_fwhm=smoothing_fwhm,  # We already smooth the maps when they are generated?
+        uK_cmb=uK_cmb  # We already set this to be true before? Please chedk these
     )
 
-    pmap2 = compute_P_maps(
-        test_file2,
-        freq=40,
-        smooth_fwhm=None,
-        uK_cmb=False
-    )
-    pmaps = np.concatenate(
-        [pmap1[:, np.newaxis], pmap2[:, np.newaxis]], axis=1)
-    len_max = 10000
-    pmaps = pmaps[:len_max, :len_max]
+    if len(filenames) > 1:
+        for file, frequency in zip(filenames[1:], frequencies[1:]):
+            pmap = compute_P_maps(
+                file,
+                freq=frequency,
+                smooth_fwhm=smoothing_fwhm,
+                uK_cmb=uK_cmb
+            )
+            if len(pmaps.shape)==1:
+                pmaps = pmaps[:,np.newaxis]
+            pmaps = np.hstack((pmaps, pmap[:, np.newaxis]))
+
+    print(np.shape(pmaps))
     hdbscan_runner = hdbscan.HDBSCAN(
-        min_cluster_size=15, min_samples=15, prediction_data=True)
-    hdbscan_runner.fit(pmaps)
+        min_cluster_size=15, min_samples=15, prediction_data=True).fit(pmaps)
     labels = hdbscan_runner.labels_
+    hp.mollview(labels, norm='hist')
+    plt.savefig('outputs/regions_before_soft_clustering.png')
+    plt.close()
+
+    plt.hist(labels)
+    plt.savefig('outputs/regions_before_soft_clustering_histograms.png')
+    plt.close()
+
     print(np.unique(labels))
     soft_clusters = hdbscan.all_points_membership_vectors(hdbscan_runner)
 
     # Assign noise points to "most likely" cluster based on soft membership scores
 
     noiseless_clusters = np.argmax(soft_clusters, axis=1)
+    
+    np.save("outputs/regions.npy", noiseless_clusters)
+    hp.mollview(noiseless_clusters, norm='hist')
+    plt.savefig('outputs/regoins_map.png')
+    plt.close()
+
+    plt.hist(noiseless_clusters)
+    plt.savefig('outputs/regions_hist.png')
+    plt.close()
+
     return noiseless_clusters
 
 
 if __name__ == "__main__":
-    get_noiseless_clusters(test_file1=test_file1, test_file2=test_file2)
+    import time
+    start = time.time()
+    filenames = [test_file1, test_file2]
+    frequencies = [40,40]
+    sky_regions = get_noiseless_clusters(filenames, frequencies)
+    print(f"Time taken = {time.time() - start}")
