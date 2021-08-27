@@ -1,0 +1,11 @@
+version: '3.6'
+services:
+    cmb_clustering:
+        container_name: cmb_clustering_hdbscan
+        image: cmb_clustering_hdbscan
+        build:
+            context: . 
+        volumes:
+            - type: bind
+              source: ./outputs/
+              target: /app/outputs
