@@ -5,3 +5,4 @@ healpy
 scikit-learn
 astropy
 hdbscan
+scipy
