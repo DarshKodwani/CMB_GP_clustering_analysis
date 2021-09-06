@@ -2,27 +2,25 @@ from src.map_making import initialise_sky, make_sky_map
 from src.compute_clusters import get_noiseless_clusters
 import pysm3.units as units
 import time
+import json
 
-litebird_freq = [40, 50, 60, 68, 78, 89, 100, 119, 140, 166, 195, 235,
-                 280, 337, 402]
 
-litebird_noise = [37.42, 33.46, 21.31, 16.87, 12.07, 11.30, 6.56, 4.58,
-                  4.79, 5.57, 5.85, 10.79, 13.80, 21.95, 47.45]
+with open('inputs.json') as in_file:
+    inputs = json.load(in_file)
 
-nside = 128
-nside_dg = 64
-preset_strings = ["d1", "s1", "c1"]
-sky_unit = "uK_CMB"
-fwhm = 60*units.arcmin
-nside = 128
-nside_dg = 64
-noise_seed = 1111
-output_directory = "outputs"
-output_prefix = 'litebird'
-
+frequencies = inputs['frequencies']
+noise = inputs['noise']
+nside = inputs['nside']
+nside_dg = inputs['nside_dg']
+preset_strings = inputs['preset_strings']
+sky_unit = inputs['sky_unit']
+fwhm = inputs['fwhm'] * units.arcmin
+noise_seed = inputs['noise_seed']
+output_directory = inputs['output_directory']
+output_prefix = inputs['output_prefix']
 
 filenames = []
-for freq, instrument_noise in zip(litebird_freq, litebird_noise):
+for freq, instrument_noise in zip(frequencies, noise):
     sky = initialise_sky(
         nside,
         preset_strings=preset_strings,
@@ -43,5 +41,5 @@ for freq, instrument_noise in zip(litebird_freq, litebird_noise):
     )
 
 start = time.time()
-sky_regions = get_noiseless_clusters(filenames=filenames, frequencies=litebird_freq)
+sky_regions = get_noiseless_clusters(filenames=filenames, frequencies=frequencies)
 print(f"Time taken = {time.time() - start}")
