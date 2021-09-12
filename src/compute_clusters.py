@@ -6,6 +6,23 @@ import matplotlib.pyplot as plt
 
 def get_noiseless_clusters(filenames, frequencies, smoothing_fwhm=None, uK_cmb=None):
 
+    """
+
+    Function for getting clusters from healpix sky maps. It assigns a cluster if to each pixel in the map. In addition it saves some clustered sky maps and related histograms. 
+
+    Inputs
+    ------
+    filenames: path to files containing the healpix maps. This can be a list of files, with sky maps for different frequencies as well
+    frequencies: a list of frequencies corresponding to the sky maps of those frequences
+    smoothing_fwhm: the smoothing scale for the maps in arcmin. By default set to None, meaning no smoothing
+    uK_cmb: Set the units of the CMB
+
+    Returns
+    -------
+    noiseless_clusters: an array with the length of each pixel and ordered in the same order of the input pixels, that contains the cluster ids for each pixel. 
+
+    """
+
     pmaps = compute_P_maps(
         filenames[0],
         freq=frequencies[0],
